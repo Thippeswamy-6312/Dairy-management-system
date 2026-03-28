@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dairy Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="icon"><i class="fa-solid fa-cow"></i></div>
+    <h2>DairyPro</h2>
+    <p>Management System</p>
+  </div>
+  
+  <div class="sb-section">Menu</div>
+  <a href="#" class="sb-item active" data-page="dashboard"><i class="fa-solid fa-chart-pie ico"></i> Dashboard</a>
+  <a href="#" class="sb-item" data-page="customers"><i class="fa-solid fa-users ico"></i> Customers</a>
+  <a href="#" class="sb-item" data-page="records"><i class="fa-solid fa-flask ico"></i> Milk Records</a>
+  <a href="#" class="sb-item" data-page="payments"><i class="fa-solid fa-file-invoice-dollar ico"></i> Payments</a>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <header class="topbar">
+    <h1 id="pageTitle">Overview Dashboard</h1>
+    <div class="date-chip" id="currentDateChip">---</div>
+  </header>
+  
+  <div class="content">
+
+    <!-- PAGE: DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="stats-row">
+        <div class="scard green">
+          <i class="fa-solid fa-users scard-icon" style="color: var(--green);"></i>
+          <div class="scard-label">Total Customers</div>
+          <div class="scard-val" id="stat-customers">0</div>
+        </div>
+        <div class="scard blue">
+          <i class="fa-solid fa-flask scard-icon" style="color: var(--blue);"></i>
+          <div class="scard-label">Today's Milk (L)</div>
+          <div class="scard-val" id="stat-milk">0.0</div>
+        </div>
+        <div class="scard amber">
+          <i class="fa-solid fa-indian-rupee-sign scard-icon" style="color: var(--amber);"></i>
+          <div class="scard-label">Today's Collection</div>
+          <div class="scard-val" id="stat-collection">0.00</div>
+        </div>
+      </div>
+      
+      <div class="card">
+         <div class="empty">
+            <i class="fa-solid fa-cow eico"></i>
+            <h3>Welcome to DairyPro</h3>
+            <p>Select an option from the sidebar to get started.</p>
+         </div>
+      </div>
+    </div>
+
+    <!-- PAGE: CUSTOMERS -->
+    <div id="page-customers" class="page">
+      <div class="card">
+        <div class="card-head">
+          <h2><i class="fa-solid fa-users"></i> Customer Register</h2>
+          <button class="btn btn-green" onclick="openModal('modal-add-customer')"><i class="fa-solid fa-plus"></i> Add Customer</button>
+        </div>
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" id="search-customer" placeholder="Search customer..." onkeyup="filterCustomers()">
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table id="tbl-customers">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Animal Type</th>
+                <th>Address</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: RECORDS -->
+    <div id="page-records" class="page">
+      <div class="card">
+        <div class="card-head">
+          <h2><i class="fa-solid fa-flask"></i> Daily Milk Records</h2>
+          <button class="btn btn-green" onclick="openModal('modal-add-record')"><i class="fa-solid fa-plus"></i> Collect Milk</button>
+        </div>
+        <div class="tbl-wrap">
+          <table id="tbl-records">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Shift</th>
+                <th>Customer Name</th>
+                <th>Liters</th>
+                <th>Fat %</th>
+                <th>Rate / L</th>
+                <th>Amount</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: PAYMENTS -->
+    <div id="page-payments" class="page">
+      <div class="card">
+        <div class="card-head">
+          <h2><i class="fa-solid fa-file-invoice-dollar"></i> Payments Received</h2>
+          <button class="btn btn-green" onclick="openModal('modal-add-payment')"><i class="fa-solid fa-plus"></i> Add Payment</button>
+        </div>
+        <div class="tbl-wrap">
+          <table id="tbl-payments">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Customer Name</th>
+                <th>Mode</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- end content -->
+</main>
+
+<!-- MODALS -->
+
+<!-- Modal: Add Customer -->
+<div class="overlay" id="modal-add-customer">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3>Add New Customer</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-customer')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-bd">
+      <form id="frm-customer" onsubmit="event.preventDefault(); saveCustomer();">
+        <div class="form-grid">
+          <div class="fg">
+            <label>Customer Code <span class="req">*</span></label>
+            <input type="text" id="c-code" required placeholder="e.g. C001">
+          </div>
+          <div class="fg">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" id="c-name" required placeholder="John Doe">
+          </div>
+          <div class="fg">
+            <label>Phone</label>
+            <input type="tel" id="c-phone" placeholder="9876543210">
+          </div>
+          <div class="fg">
+            <label>Animal Type</label>
+            <select id="c-animal">
+              <option value="cow">Cow</option>
+              <option value="buffalo">Buffalo</option>
+              <option value="mixed">Mixed</option>
+            </select>
+          </div>
+          <div class="fg span2">
+            <label>Address</label>
+            <textarea id="c-address" rows="2" placeholder="Village / Area"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal('modal-add-customer')">Cancel</button>
+      <button class="btn btn-green" onclick="saveCustomer()">Save Customer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Record -->
+<div class="overlay" id="modal-add-record">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3>Record Milk Collection</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-record')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-bd">
+      <form id="frm-record" onsubmit="event.preventDefault(); saveRecord();">
+        <div class="form-grid">
+          <div class="fg span2">
+            <label>Customer <span class="req">*</span></label>
+            <select id="r-customer" required>
+                <option value="">Select a customer...</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Record Date <span class="req">*</span></label>
+            <input type="date" id="r-date" required>
+          </div>
+          <div class="fg">
+            <label>Shift <span class="req">*</span></label>
+            <select id="r-shift" required>
+              <option value="morning">Morning</option>
+              <option value="evening">Evening</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Liters (Amount) <span class="req">*</span></label>
+            <input type="number" step="0.01" id="r-liter" required>
+          </div>
+          <div class="fg">
+            <label>Fat Percentage <span class="req">*</span></label>
+            <input type="number" step="0.1" id="r-fat" required>
+          </div>
+          <div class="fg">
+            <label>Rate / Liter <span class="req">*</span></label>
+            <input type="number" step="0.01" id="r-rate" required>
+          </div>
+          <div class="fg">
+            <label>Amount Collected Now</label>
+            <input type="number" step="0.01" id="r-collected" value="0">
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal('modal-add-record')">Cancel</button>
+      <button class="btn btn-amber" onclick="saveRecord()">Save Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Payment -->
+<div class="overlay" id="modal-add-payment">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3>Add Payment</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-payment')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-bd">
+      <form id="frm-payment" onsubmit="event.preventDefault(); savePayment();">
+        <div class="form-grid">
+          <div class="fg span2">
+            <label>Customer <span class="req">*</span></label>
+            <select id="p-customer" required>
+                <option value="">Select a customer...</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Payment Date <span class="req">*</span></label>
+            <input type="date" id="p-date" required>
+          </div>
+          <div class="fg">
+            <label>Amount <span class="req">*</span></label>
+            <input type="number" step="0.01" id="p-amount" required>
+          </div>
+          <div class="fg">
+            <label>Mode</label>
+            <select id="p-mode">
+              <option value="cash">Cash</option>
+              <option value="upi">UPI / Online</option>
+              <option value="bank">Bank Transfer</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal('modal-add-payment')">Cancel</button>
+      <button class="btn" style="background:var(--blue);color:#fff;" onclick="savePayment()">Save Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div id="toasts"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
