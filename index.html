@@ -72,7 +72,7 @@
       <div class="card">
         <div class="card-head">
           <h2><i class="fa-solid fa-users"></i> Customer Register</h2>
-          <button class="btn btn-green" onclick="openModal('modal-add-customer')"><i class="fa-solid fa-plus"></i> Add Customer</button>
+          <button class="btn btn-green" onclick="openAddCustomerModal()"><i class="fa-solid fa-plus"></i> Add Customer</button>
         </div>
         <div class="filter-bar">
           <div class="search-wrap">
@@ -89,6 +89,7 @@
                 <th>Phone</th>
                 <th>Animal Type</th>
                 <th>Address</th>
+                <th style="text-align: right;">Action</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -102,7 +103,7 @@
       <div class="card">
         <div class="card-head">
           <h2><i class="fa-solid fa-flask"></i> Daily Milk Records</h2>
-          <button class="btn btn-green" onclick="openModal('modal-add-record')"><i class="fa-solid fa-plus"></i> Collect Milk</button>
+          <button class="btn btn-green" onclick="openAddRecordModal()"><i class="fa-solid fa-plus"></i> Collect Milk</button>
         </div>
         <div class="tbl-wrap">
           <table id="tbl-records">
@@ -130,7 +131,7 @@
       <div class="card">
         <div class="card-head">
           <h2><i class="fa-solid fa-file-invoice-dollar"></i> Payments Received</h2>
-          <button class="btn btn-green" onclick="openModal('modal-add-payment')"><i class="fa-solid fa-plus"></i> Add Payment</button>
+          <button class="btn btn-green" onclick="openAddPaymentModal()"><i class="fa-solid fa-plus"></i> Add Payment</button>
         </div>
         <div class="tbl-wrap">
           <table id="tbl-payments">
@@ -140,6 +141,7 @@
                 <th>Customer Name</th>
                 <th>Mode</th>
                 <th style="text-align: right;">Amount</th>
+                <th style="text-align: right;">Action</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -157,11 +159,12 @@
 <div class="overlay" id="modal-add-customer">
   <div class="modal">
     <div class="modal-hd">
-      <h3>Add New Customer</h3>
+      <h3 id="modal-add-customer-title">Add New Customer</h3>
       <button class="modal-close" onclick="closeModal('modal-add-customer')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-bd">
       <form id="frm-customer" onsubmit="event.preventDefault(); saveCustomer();">
+        <input type="hidden" id="c-id" value="">
         <div class="form-grid">
           <div class="fg">
             <label>Customer Code <span class="req">*</span></label>
@@ -201,11 +204,12 @@
 <div class="overlay" id="modal-add-record">
   <div class="modal">
     <div class="modal-hd">
-      <h3>Record Milk Collection</h3>
+      <h3 id="modal-add-record-title">Record Milk Collection</h3>
       <button class="modal-close" onclick="closeModal('modal-add-record')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-bd">
       <form id="frm-record" onsubmit="event.preventDefault(); saveRecord();">
+        <input type="hidden" id="r-id" value="">
         <div class="form-grid">
           <div class="fg span2">
             <label>Customer <span class="req">*</span></label>
@@ -254,11 +258,12 @@
 <div class="overlay" id="modal-add-payment">
   <div class="modal">
     <div class="modal-hd">
-      <h3>Add Payment</h3>
+      <h3 id="modal-add-payment-title">Add Payment</h3>
       <button class="modal-close" onclick="closeModal('modal-add-payment')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-bd">
       <form id="frm-payment" onsubmit="event.preventDefault(); savePayment();">
+        <input type="hidden" id="p-id" value="">
         <div class="form-grid">
           <div class="fg span2">
             <label>Customer <span class="req">*</span></label>

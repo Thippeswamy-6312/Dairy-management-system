@@ -86,8 +86,18 @@ function showToast(msg, type = "ok") {
 // ── API HELPERS ──
 async function fetchAPI(endpoint, method = "GET", data = null) {
   try {
-    const options = { method, headers: { "Content-Type": "application/json" } };
+    const activeUserStr = localStorage.getItem('dairy_user');
+    const activeUser = activeUserStr ? JSON.parse(activeUserStr) : null;
+    const userId = activeUser ? activeUser.id : '';
+
+    const headers = { 
+      "Content-Type": "application/json",
+      "X-User-Id": userId.toString()
+    };
+    
+    const options = { method, headers };
     if (data) options.body = JSON.stringify(data);
+    
     const res = await fetch(API_BASE + endpoint, options);
     return await res.json();
   } catch (err) {
@@ -128,6 +138,10 @@ function renderCustomersTable(data) {
       <td class="mono">${c.phone || '-'}</td>
       <td><span class="chip ${c.animal_type==='cow'?'chip-A':(c.animal_type==='buffalo'?'chip-B':'chip-C')}">${c.animal_type.toUpperCase()}</span></td>
       <td>${c.address || '-'}</td>
+      <td style="text-align: right; white-space: nowrap;">
+        <button class="btn btn-xs btn-outline" style="color:var(--amber); border-color:var(--border);" onclick='editCustomer(${JSON.stringify(c).replace(/'/g, "&#39;")})'><i class="fa-solid fa-pen"></i> Edit</button>
+        <button class="btn btn-xs" style="color:var(--red); border-color:var(--red); background:none;" onclick='deleteCustomer(${c.id})'><i class="fa-solid fa-trash"></i> Delete</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -148,7 +162,38 @@ function populateCustomerDropdowns() {
   document.getElementById("p-customer").innerHTML = options;
 }
 
+window.openAddCustomerModal = function() {
+  document.getElementById("frm-customer").reset();
+  document.getElementById("c-id").value = "";
+  document.getElementById("modal-add-customer-title").innerText = "Add New Customer";
+  openModal("modal-add-customer");
+};
+
+window.editCustomer = function(c) {
+  document.getElementById("modal-add-customer-title").innerText = "Edit Customer";
+  document.getElementById("c-id").value = c.id;
+  document.getElementById("c-code").value = c.customer_code;
+  document.getElementById("c-name").value = c.name;
+  document.getElementById("c-phone").value = c.phone || "";
+  document.getElementById("c-animal").value = c.animal_type;
+  document.getElementById("c-address").value = c.address || "";
+  openModal("modal-add-customer");
+};
+
+window.deleteCustomer = async function(id) {
+  if (!confirm("Are you sure you want to delete this customer?")) return;
+  const res = await fetchAPI("customers.php", "DELETE", { id });
+  if (res.success) {
+    showToast("Customer deleted successfully");
+    loadCustomers();
+    loadDashboard();
+  } else {
+    showToast(res.error || "Failed to delete customer", "err");
+  }
+};
+
 async function saveCustomer() {
+  const cid = document.getElementById("c-id").value;
   const data = {
     customer_code: document.getElementById("c-code").value,
     name: document.getElementById("c-name").value,
@@ -157,11 +202,15 @@ async function saveCustomer() {
     address: document.getElementById("c-address").value
   };
 
-  const res = await fetchAPI("customers.php", "POST", data);
+  if (cid) data.id = cid;
+
+  const method = cid ? "PUT" : "POST";
+  const res = await fetchAPI("customers.php", method, data);
   if (res.success) {
-    showToast("Customer saved successfully");
+    showToast(cid ? "Customer updated successfully" : "Customer saved successfully");
     closeModal("modal-add-customer");
     document.getElementById("frm-customer").reset();
+    document.getElementById("c-id").value = "";
     loadCustomers();
     loadDashboard();
   } else {
@@ -170,6 +219,14 @@ async function saveCustomer() {
 }
 
 // ── RECORDS ──
+window.openAddRecordModal = function() {
+  document.getElementById("frm-record").reset();
+  document.getElementById("r-id").value = "";
+  document.getElementById("modal-add-record-title").innerText = "Record Milk Collection";
+  document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
+  openModal('modal-add-record');
+};
+
 async function loadRecords() {
   const res = await fetchAPI("records.php");
   if (res.success) {
@@ -187,8 +244,10 @@ async function loadRecords() {
         <td class="mono">₹${parseFloat(r.rate_per_liter).toFixed(2)}</td>
         <td class="mono" style="font-weight:700;">₹${parseFloat(r.daily_amount).toFixed(2)}</td>
         <td class="mono" style="color:var(--red);">₹${parseFloat(r.balance).toFixed(2)}</td>
-        <td style="text-align: right;">
+        <td style="text-align: right; white-space: nowrap;">
           <button class="btn btn-xs btn-outline" style="border-color:var(--border);" onclick='openReceipt(${JSON.stringify(r).replace(/'/g, "&#39;")})'><i class="fa-solid fa-receipt"></i> Print</button>
+          <button class="btn btn-xs btn-outline" style="color:var(--amber); border-color:var(--border);" onclick='editRecord(${JSON.stringify(r).replace(/'/g, "&#39;")})'><i class="fa-solid fa-pen"></i> Edit</button>
+          <button class="btn btn-xs" style="color:var(--red); border-color:var(--red); background:none;" onclick='deleteRecord(${r.id})'><i class="fa-solid fa-trash"></i> Delete</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -209,7 +268,33 @@ window.openReceipt = function(r) {
   openModal('modal-receipt');
 };
 
+window.editRecord = function(r) {
+  document.getElementById("modal-add-record-title").innerText = "Edit Milk Record";
+  document.getElementById("r-id").value = r.id;
+  document.getElementById("r-customer").value = r.customer_id;
+  document.getElementById("r-date").value = r.record_date;
+  document.getElementById("r-shift").value = r.shift;
+  document.getElementById("r-liter").value = r.liter_amount;
+  document.getElementById("r-fat").value = r.fat_percentage;
+  document.getElementById("r-rate").value = r.rate_per_liter;
+  document.getElementById("r-collected").value = r.collected_amount || 0;
+  openModal("modal-add-record");
+};
+
+window.deleteRecord = async function(id) {
+  if (!confirm("Are you sure you want to delete this record?")) return;
+  const res = await fetchAPI("records.php", "DELETE", { id });
+  if (res.success) {
+    showToast("Record deleted successfully");
+    loadRecords();
+    loadDashboard();
+  } else {
+    showToast(res.error || "Failed to delete record", "err");
+  }
+};
+
 async function saveRecord() {
+  const rid = document.getElementById("r-id").value;
   const data = {
     customer_id: document.getElementById("r-customer").value,
     record_date: document.getElementById("r-date").value,
@@ -221,12 +306,19 @@ async function saveRecord() {
   };
 
   if(!data.customer_id) return showToast("Select customer","err");
+  
+  if (rid) {
+    data.id = rid;
+  }
 
-  const res = await fetchAPI("records.php", "POST", data);
+  const method = rid ? "PUT" : "POST";
+  const res = await fetchAPI("records.php", method, data);
+  
   if (res.success) {
-    showToast("Record saved successfully");
+    showToast(rid ? "Record updated successfully" : "Record saved successfully");
     closeModal("modal-add-record");
     document.getElementById("frm-record").reset();
+    document.getElementById("r-id").value = "";
     document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
     loadRecords();
     loadDashboard();
@@ -249,13 +341,48 @@ async function loadPayments() {
         <td style="font-weight:600;">${p.name}</td>
         <td><span class="chip chip-blue" style="text-transform:uppercase;">${p.mode}</span></td>
         <td class="mono" style="text-align:right;font-weight:700;color:var(--green);">+ ₹${parseFloat(p.amount).toFixed(2)}</td>
+        <td style="text-align: right; white-space: nowrap;">
+          <button class="btn btn-xs btn-outline" style="color:var(--amber); border-color:var(--border);" onclick='editPayment(${JSON.stringify(p).replace(/'/g, "&#39;")})'><i class="fa-solid fa-pen"></i> Edit</button>
+          <button class="btn btn-xs" style="color:var(--red); border-color:var(--red); background:none;" onclick='deletePayment(${p.id})'><i class="fa-solid fa-trash"></i> Delete</button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
   }
 }
 
+window.openAddPaymentModal = function() {
+  document.getElementById("frm-payment").reset();
+  document.getElementById("p-id").value = "";
+  document.getElementById("modal-add-payment-title").innerText = "Add Payment";
+  document.getElementById('p-date').value = new Date().toISOString().split('T')[0];
+  openModal("modal-add-payment");
+};
+
+window.editPayment = function(p) {
+  document.getElementById("modal-add-payment-title").innerText = "Edit Payment";
+  document.getElementById("p-id").value = p.id;
+  document.getElementById("p-customer").value = p.customer_id;
+  document.getElementById("p-date").value = p.payment_date;
+  document.getElementById("p-amount").value = p.amount;
+  document.getElementById("p-mode").value = p.mode;
+  openModal("modal-add-payment");
+};
+
+window.deletePayment = async function(id) {
+  if (!confirm("Are you sure you want to delete this payment?")) return;
+  const res = await fetchAPI("payments.php", "DELETE", { id });
+  if (res.success) {
+    showToast("Payment deleted successfully");
+    loadPayments();
+    loadDashboard();
+  } else {
+    showToast(res.error || "Failed to delete payment", "err");
+  }
+};
+
 async function savePayment() {
+  const pid = document.getElementById("p-id").value;
   const data = {
     customer_id: document.getElementById("p-customer").value,
     payment_date: document.getElementById("p-date").value,
@@ -264,14 +391,18 @@ async function savePayment() {
   };
 
   if(!data.customer_id) return showToast("Select customer","err");
+  if (pid) data.id = pid;
 
-  const res = await fetchAPI("payments.php", "POST", data);
+  const method = pid ? "PUT" : "POST";
+  const res = await fetchAPI("payments.php", method, data);
   if (res.success) {
-    showToast("Payment recorded successfully");
+    showToast(pid ? "Payment updated successfully" : "Payment recorded successfully");
     closeModal("modal-add-payment");
     document.getElementById("frm-payment").reset();
+    document.getElementById("p-id").value = "";
     document.getElementById('p-date').value = new Date().toISOString().split('T')[0];
     loadPayments();
+    loadDashboard();
   } else {
     showToast(res.error || "Failed to save payment", "err");
   }
