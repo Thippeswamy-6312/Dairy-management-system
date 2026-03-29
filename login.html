@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Dairy Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--cream);
+        }
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            background: #fff;
+            border-radius: var(--r-lg);
+            border: 1.5px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            animation: fadeUp 0.4s ease;
+        }
+        .auth-brand {
+            margin-bottom: 30px;
+        }
+        .auth-brand .icon {
+            width: 60px;
+            height: 60px;
+            background: var(--brown);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: #fff;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(91,58,30,.25);
+        }
+        .auth-brand h2 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 28px;
+            color: var(--ink);
+        }
+        .auth-brand p {
+            font-size: 13px;
+            color: var(--ink-lt);
+            margin-top: 4px;
+        }
+        .auth-form .fg {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .auth-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 12px;
+            font-size: 15px;
+            margin-top: 10px;
+        }
+        .auth-links {
+            margin-top: 24px;
+            font-size: 13px;
+            color: var(--ink-lt);
+        }
+        .auth-links a {
+            color: var(--green);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+        #error-msg {
+            color: var(--red);
+            font-size: 13px;
+            margin-bottom: 15px;
+            display: none;
+            padding: 10px;
+            background: var(--red-pale);
+            border-radius: 8px;
+            border: 1px solid #f5c6c2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div class="auth-brand">
+        <div class="icon"><i class="fa-solid fa-cow"></i></div>
+        <h2>DairyPro</h2>
+        <p>Login to your account</p>
+    </div>
+
+    <div id="error-msg"></div>
+
+    <form class="auth-form" id="loginForm" onsubmit="event.preventDefault(); login();">
+        <div class="fg">
+            <label>Username</label>
+            <input type="text" id="username" required placeholder="Enter your username">
+        </div>
+        <div class="fg">
+            <label>Password</label>
+            <input type="password" id="password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-green auth-btn" id="loginBtn">Sign In</button>
+    </form>
+
+    <div class="auth-links">
+        Don't have an account? <a href="register.html">Register here</a>
+    </div>
+</div>
+
+<script>
+    // If already logged in, redirect
+    if(localStorage.getItem('dairy_user')) {
+        window.location.href = 'index.html';
+    }
+
+    async function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const btn = document.getElementById('loginBtn');
+        const err = document.getElementById('error-msg');
+        
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing In...';
+        btn.disabled = true;
+        err.style.display = 'none';
+
+        try {
+            const res = await fetch('php/auth.php?action=login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            
+            if(data.success) {
+                localStorage.setItem('dairy_user', JSON.stringify(data.data));
+                window.location.href = 'index.html';
+            } else {
+                err.innerText = data.message || 'Login failed';
+                err.style.display = 'block';
+                btn.innerHTML = 'Sign In';
+                btn.disabled = false;
+            }
+        } catch(e) {
+            err.innerText = 'Network error. Please try again.';
+            err.style.display = 'block';
+            btn.innerHTML = 'Sign In';
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>

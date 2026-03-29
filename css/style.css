@@ -231,10 +231,30 @@ tbody tr:hover { background:rgba(90,158,111,.04); }
 
 /* ── PRINT ── */
 @media print {
-  .sidebar,.topbar,.filter-bar,.btn,.overlay { display:none!important; }
-  .main { margin-left:0; } .content { padding:0; }
-  .card { box-shadow:none; border:1px solid #ccc; } body { background:#fff; }
+  body { background:#fff; margin:0; padding:0; }
+  .sidebar, .topbar, .filter-bar, .btn, .no-print, .stats-row, .card-head, .tbl-wrap, #toasts { display:none!important; }
+  
+  .main { margin-left:0; flex:none; }
+  .content { padding:0; }
+  .card { box-shadow:none; border:none; margin:0; }
+  
+  /* Show only the modal content if open */
+  .overlay.open { position:absolute; inset:0; display:block!important; background:#fff!important; align-items:flex-start; }
+  .modal { box-shadow:none; border-radius:0; border:none; margin:0 auto; max-width:100%; animation:none; }
+  .receipt-box { padding:20px; font-size:12px; }
 }
+
+/* ── RECEIPT BOX ── */
+.receipt-box { padding: 30px 24px; font-family: 'JetBrains Mono', monospace; color: var(--ink); background: #fff; }
+.receipt-header { text-align: center; margin-bottom: 16px; }
+.receipt-header .icon { font-size: 24px; color: var(--ink); margin-bottom: 8px; }
+.receipt-header h2 { font-family: 'Instrument Serif', serif; font-size: 24px; line-height: 1; }
+.receipt-header p { font-size: 11px; color: var(--ink-lt); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+.receipt-divider { border-top: 1.5px dashed var(--ink-lt); margin: 16px 0; opacity: 0.5; }
+.r-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+.r-label { color: var(--ink-mid); }
+.r-total { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; margin-top: 16px; }
+.receipt-footer { text-align: center; font-size: 11px; color: var(--ink-lt); margin-top: 24px; }
 
 /* ── RESPONSIVE ── */
 @media (max-width:1280px) { .stats-row { grid-template-columns:repeat(3,1fr); } }

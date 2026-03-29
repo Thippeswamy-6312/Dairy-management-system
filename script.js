@@ -5,6 +5,12 @@ let customersData = [];
 
 // ── INIT ──
 window.onload = () => {
+  // Check Auth
+  if (!localStorage.getItem('dairy_user')) {
+    window.location.href = 'login.html';
+    return;
+  }
+
   // Set Date Chip
   document.getElementById("currentDateChip").innerText = new Date().toLocaleDateString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
   
@@ -29,6 +35,12 @@ window.onload = () => {
   loadCustomers();
   loadRecords();
   loadPayments();
+};
+
+// ── AUTH ──
+window.logout = function() {
+  localStorage.removeItem('dairy_user');
+  window.location.href = 'login.html';
 };
 
 // ── NAVIGATION ──
@@ -175,11 +187,27 @@ async function loadRecords() {
         <td class="mono">₹${parseFloat(r.rate_per_liter).toFixed(2)}</td>
         <td class="mono" style="font-weight:700;">₹${parseFloat(r.daily_amount).toFixed(2)}</td>
         <td class="mono" style="color:var(--red);">₹${parseFloat(r.balance).toFixed(2)}</td>
+        <td style="text-align: right;">
+          <button class="btn btn-xs btn-outline" style="border-color:var(--border);" onclick='openReceipt(${JSON.stringify(r).replace(/'/g, "&#39;")})'><i class="fa-solid fa-receipt"></i> Print</button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
   }
 }
+
+window.openReceipt = function(r) {
+  const dateStr = new Date(r.record_date).toLocaleDateString('en-GB');
+  document.getElementById('rec-date').innerText = dateStr;
+  document.getElementById('rec-shift').innerText = r.shift;
+  document.getElementById('rec-name').innerText = r.name;
+  document.getElementById('rec-liters').innerText = parseFloat(r.liter_amount).toFixed(2);
+  document.getElementById('rec-fat').innerText = parseFloat(r.fat_percentage).toFixed(1);
+  document.getElementById('rec-rate').innerText = parseFloat(r.rate_per_liter).toFixed(2);
+  document.getElementById('rec-total').innerText = '₹' + parseFloat(r.daily_amount).toFixed(2);
+  
+  openModal('modal-receipt');
+};
 
 async function saveRecord() {
   const data = {
